@@ -1,0 +1,3 @@
+logging origin-id hostname
+logging host {{ config_context["syslog"][0]["remote-syslog"] }} transport udp port {{ config_context["syslog"][0]["syslog-port"] }}
+

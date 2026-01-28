@@ -1,0 +1,12 @@
+{% for interface in interfaces %}
+{% if "loop" in interface.name | lower %}
+{% include include_path ~ '/312_loopb_interface.j2' %}
+{% elif "vlan" in interface.name | lower %}
+{% include include_path ~ '/313_vlan_interface.j2' %}
+{% elif "fastethernet0" in interface.name | lower %}
+{% include include_path ~ '/315_fastethernet_interface.j2' %}
+{% else %}
+{% include include_path ~ '/314_physical_interfaces.j2' %}
+{% endif %}
+{% endfor %}
+

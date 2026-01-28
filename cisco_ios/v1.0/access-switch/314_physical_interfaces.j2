@@ -1,0 +1,42 @@
+interface {{ interface["name"] }}
+{% set non_poe_list = ["GigabitEthernet1/0/49", "GigabitEthernet1/0/50", "TenGigabitEthernet1/0/1", "TenGigabitEthernet1/0/2"] %}
+{% set tagged_list = interface.tagged_vlans | map(attribute="vid") | list %}
+{% if interface["description"] | length > 1 %}
+ description {{ interface["description"] }}
+{% endif %}
+{% if interface.mode is defined %}
+{% if interface.mode == "TAGGED_ALL" %}
+ switchport mode trunk
+{% if interface.untagged_vlan.vid is defined and interface.untagged_vlan.vid != 1 %}
+ switchport trunk native vlan {{ interface.untagged_vlan.vid }}
+{% endif %}
+{% elif interface.mode == "TAGGED" %}
+ switchport mode trunk
+{% if (interface.untagged_vlan.vid is defined) %}
+{% set allowed_list = [interface.untagged_vlan.vid] + tagged_list %}
+ switchport trunk allowed vlan {{ allowed_list | sort | vlanlist_to_config | first }}
+{% if interface.untagged_vlan.vid != 1 %}
+ switchport trunk native vlan {{ interface.untagged_vlan.vid }}
+{% endif %}
+{% else %}
+ switchport trunk allowed vlan {{ interface.tagged_vlans | map(attribute="vid") | list | vlanlist_to_config | first }}
+{% endif %}
+{% elif interface.mode == "ACCESS" and interface.untagged_vlan.vid is defined %}
+ switchport mode access
+ switchport access vlan {{ interface.untagged_vlan.vid }}
+{% endif %}
+{% endif %}
+{% if "AP" in interface["description"] | upper %}
+ power inline consumption 12000
+{% elif interface.name not in non_poe_list %}
+ power inline never
+{% endif %}
+{% if "DF" not in interface["description"] | upper %}
+ switchport protected
+ spanning-tree portfast edge
+{% endif %}
+{% if interface["enabled"] == false %}
+ shutdown
+{% endif %}
+!
+

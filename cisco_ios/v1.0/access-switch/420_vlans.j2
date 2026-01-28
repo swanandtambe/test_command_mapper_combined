@@ -1,0 +1,23 @@
+vlan internal allocation policy ascending
+!
+{% if vlans_merged_list is defined %}
+{% if 1 in vlans_merged_list %}
+{% set vlan_ids = vlans_merged_list %}
+{% else %}
+{% set vlan_ids = [1] + vlans_merged_list %}
+{% endif %}
+{% else %}
+{% set vlan_ids = [1] %}
+{% endif %}
+{# vlan {{ vlan_ids | join(',') }} #}
+{# Duplicate VLANs IDs are allowed per site in Nautobot #}
+{% set ns = namespace(processed_vlans=[]) %}
+{% for vlan in location['parent']['parent']['vlans'] %}
+{%   if vlan['vid'] not in ns.processed_vlans %}
+{% set ns.processed_vlans = ns.processed_vlans + [vlan['vid']] %}
+{% if vlan.vid != 1 %}
+vlan {{ vlan['vid'] }}
+ name {{ vlan['name'] }}
+{% endif %}
+{% endif %}
+{% endfor %}

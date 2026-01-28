@@ -1,0 +1,4 @@
+{% for community in config_context["snmp"]["scrubbed_community"] %}
+snmp-server community {{ community["name"] }} RO
+{% endfor %}
+

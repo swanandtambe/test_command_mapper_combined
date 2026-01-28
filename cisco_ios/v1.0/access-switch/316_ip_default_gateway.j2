@@ -1,0 +1,6 @@
+{% if primary_ip4.address is defined %}
+ip default-gateway {{ primary_ip4.address | ip_network_first }}
+{% endif %}
+!
+
+

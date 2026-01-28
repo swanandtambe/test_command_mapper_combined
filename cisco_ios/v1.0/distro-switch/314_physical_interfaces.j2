@@ -1,0 +1,43 @@
+interface {{ interface["name"] }}
+{% set tagged_list = interface.tagged_vlans | map(attribute="vid") | list %}
+{% if interface["description"] | length > 1 %}
+ description {{ interface["description"] }}
+{% endif %}
+{% if interface.mode is defined %}
+{% if interface.mode == "TAGGED_ALL" %}
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+{% if interface.untagged_vlan.vid is defined and interface.untagged_vlan.vid != 1 %}
+ switchport trunk native vlan {{ interface.untagged_vlan.vid }}
+{% endif %}
+{% elif interface.mode == "TAGGED" %}
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+{% if (interface.untagged_vlan.vid is defined) %}
+{% set allowed_list = [interface.untagged_vlan.vid] + tagged_list %}
+ switchport trunk allowed vlan {{ allowed_list | sort | vlanlist_to_config | first }}
+{% if interface.untagged_vlan.vid != 1 %}
+ switchport trunk native vlan {{ interface.untagged_vlan.vid }}
+{% endif %}
+{% else %}
+ switchport trunk allowed vlan {{ interface.tagged_vlans | map(attribute="vid") | list | vlanlist_to_config | first }}
+{% endif %}
+{% elif interface.mode == "ACCESS" and interface.untagged_vlan.vid is defined %}
+ switchport mode access
+ switchport access vlan {{ interface.untagged_vlan.vid }}
+{% endif %}
+{% endif %}
+{% if "AP" in interface["description"] | upper %}
+ power inline port priority high
+{% else %}
+ power inline never
+{% endif %}
+{% if "DF" not in interface["description"] | upper %}
+ switchport protected
+ spanning-tree portfast
+{% endif %}
+{% if interface["enabled"] == false %}
+ shutdown
+{% endif %}
+!
+

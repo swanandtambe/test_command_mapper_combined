@@ -1,0 +1,7 @@
+{% if config_context['ntp'][0]['primary-ntp'] is defined  %}
+ntp server {{ config_context['ntp'][0]['primary-ntp'] }} prefer{{ '' }}
+{% endif %}
+{% if config_context['ntp'][0]['secondary-ntp'] is defined  %}
+ntp server {{ config_context['ntp'][0]['secondary-ntp'] }}{{ '' }}
+{% endif %}
+

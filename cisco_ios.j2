@@ -1,0 +1,6 @@
+{% set role_mapping = {"Distro Switch": "distro-switch", "Access Switch": "access-switch"} %}
+{% set devicerole = role_mapping[role.name] | default('default') %}
+{% set design_rev = config_context['design_revision'] | default('v1.0') %}
+{% set root_path = './cisco_ios/' ~ design_rev %}
+{% set include_path = root_path ~ '/' ~ devicerole %}
+{% include root_path ~ '/' ~ devicerole ~ '_main.j2' %}
